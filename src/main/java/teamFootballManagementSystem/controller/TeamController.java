@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import teamFootballManagementSystem.model.Team;
 import teamFootballManagementSystem.service.TeamService;
-
 import java.util.List;
 
 @RestController
@@ -17,7 +16,6 @@ public class TeamController {
     }
     @GetMapping
     public List<Team> getAllTeams(){return teamService.getAllTeams();}
-
     @PostMapping
     public Team addTeam(@RequestBody Team team){
         return teamService.addTeam(team);
