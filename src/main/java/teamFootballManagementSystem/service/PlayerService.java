@@ -16,7 +16,7 @@ public class PlayerService {
         this.playerRepository = playerRepository;
     }
 
-    public List<Player> getAllPlayer() {
+    public List<Player> getAllPlayers() {
         return playerRepository.findAll();
     }
 

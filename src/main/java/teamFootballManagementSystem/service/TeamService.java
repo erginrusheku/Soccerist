@@ -20,7 +20,7 @@ public class TeamService {
         return teamRepository.findAll();
     }
 
-    public Team addTeam(@RequestBody Team team) {
+    public Team addTeam( Team team) {
         return teamRepository.save(team);
     }
 
@@ -28,7 +28,7 @@ public class TeamService {
         return teamRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("\"Team not found with id:\"+ id"));
     }
 
-    public Team updateTeam(@PathVariable Long id, @RequestBody Team updatedTeam) {
+    public Team updateTeam( Long id, Team updatedTeam) {
         return teamRepository.findById(id).map(team -> {
             team.setName(updatedTeam.getName());
             team.setCoach(updatedTeam.getCoach());
@@ -37,7 +37,7 @@ public class TeamService {
         }).orElseThrow(() -> new IllegalArgumentException("Team not found with id: " + id));
     }
 
-    public void deleteTeam(@PathVariable Long id) {
+    public void deleteTeam( Long id) {
         teamRepository.deleteById(id);
     }
 }

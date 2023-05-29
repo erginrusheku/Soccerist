@@ -14,4 +14,13 @@ public class Team {
     private String name;
     private String coach;
     private String homeStadium;
+
+    public Team(){}
+
+    public Team(Long id, String name, String coach, String homeStadium) {
+        this.id = id;
+        this.name = name;
+        this.coach = coach;
+        this.homeStadium = homeStadium;
+    }
 }
