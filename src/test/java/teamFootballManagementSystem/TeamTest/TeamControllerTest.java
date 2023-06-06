@@ -1,127 +1,142 @@
 package teamFootballManagementSystem.TeamTest;
 
-import teamFootballManagementSystem.model.Team;
-import teamFootballManagementSystem.service.TeamService;
-import teamFootballManagementSystem.controller.TeamController;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import teamFootballManagementSystem.controller.TeamController;
+
+import teamFootballManagementSystem.dto.TeamDTO;
+import teamFootballManagementSystem.mapper.PlayerMapper;
+import teamFootballManagementSystem.mapper.TeamMapper;
+import teamFootballManagementSystem.model.Team;
+import teamFootballManagementSystem.service.PlayerService;
+import teamFootballManagementSystem.service.TeamService;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
+@WebMvcTest(TeamController.class)
 public class TeamControllerTest {
+    @Autowired
     private MockMvc mockMvc;
 
-    @Mock
+    @MockBean
     private TeamService teamService;
 
-    private TeamController teamController;
+    @Mock
+    private TeamMapper teamMapper;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        teamController = new TeamController(teamService);
-        mockMvc = MockMvcBuilders.standaloneSetup(teamController).build();
     }
 
     @Test
-    void testGetAllTeams() throws Exception {
-        List<Team> teams = Arrays.asList(
-                new Team(1L, "Team 1", "Coach 1", "Stadium 1"),
-                new Team(2L, "Team 2", "Coach 2", "Stadium 2")
-        );
+    void getAllTeams() throws Exception {
+        TeamDTO teamDTO1 = new TeamDTO(1L, "Roma", "Mourinho", "Roma");
+        TeamDTO teamDTO2 = new TeamDTO(2L, "Tirona", "Shehi", "Tirona");
+        List<TeamDTO> teamDTOs = Arrays.asList(teamDTO1, teamDTO2);
 
-        when(teamService.getAllTeams()).thenReturn(teams);
+        when(teamService.getAllTeams()).thenReturn(teamDTOs);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/teams"))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].id").value(1))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].name").value("Team 1"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].coach").value("Coach 1"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].homeStadium").value("Stadium 1"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[1].id").value(2))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[1].name").value("Team 2"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[1].coach").value("Coach 2"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[1].homeStadium").value("Stadium 2"));
-
-        verify(teamService, times(1)).getAllTeams();
+        mockMvc.perform(get("/teams"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].name").value("Roma"))
+                .andExpect(jsonPath("$[0].coach").value("Mourinho"))
+                .andExpect(jsonPath("$[0].homeStadium").value("Roma"))
+                .andExpect(jsonPath("$[1].id").value(2))
+                .andExpect(jsonPath("$[1].name").value("Tirona"))
+                .andExpect(jsonPath("$[1].coach").value("Shehi"))
+                .andExpect(jsonPath("$[1].homeStadium").value("Tirona"));
     }
 
     @Test
-    void testGetTeamById() throws Exception {
+    void getPlayerById() throws Exception {
         Long id = 1L;
-        Team team = new Team(id, "Team 1", "Coach 1", "Stadium 1");
+        TeamDTO teamDTO = new TeamDTO(id, "Roma", "Mourinho", "Roma");
 
-        when(teamService.getById(id)).thenReturn(team);
+        when(teamService.getById(id)).thenReturn(teamDTO);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/teams/{id}", id))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(1))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Team 1"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.coach").value("Coach 1"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.homeStadium").value("Stadium 1"));
+        mockMvc.perform(get("/teams/{id}", id))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.name").value("Roma"))
+                .andExpect(jsonPath("$.coach").value("Mourinho"))
+                .andExpect(jsonPath("$.homeStadium").value("Roma"));
 
         verify(teamService, times(1)).getById(id);
     }
 
     @Test
-    void testAddTeam() throws Exception {
-        Team team = new Team(null, "New Team", "New Coach", "New Stadium");
-        Team savedTeam = new Team(1L, "New Team", "New Coach", "New Stadium");
+    void createPlayer() throws Exception {
+        Long id = 1L;
+        TeamDTO teamDTO = new TeamDTO(id, "Roma", "Mourinho", "Roma");
 
-        when(teamService.addTeam(any(Team.class))).thenReturn(savedTeam);
+        when(teamService.addTeam(any(TeamDTO.class))).thenReturn(teamDTO);
+        when(teamMapper.toEntity(any(TeamDTO.class))).thenReturn(new Team(1L, "Roma", "Mourinho", "Roma"));
+        when(teamMapper.toDto(any(Team.class))).thenReturn(teamDTO);
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/teams")
+        mockMvc.perform(post("/teams")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"New Team\",\"coach\":\"New Coach\",\"homeStadium\":\"New Stadium\"}"))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(1))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("New Team"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.coach").value("New Coach"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.homeStadium").value("New Stadium"));
-
-        verify(teamService, times(1)).addTeam(any(Team.class));
+                        .content("{\"name\":\"Roma\",\"coach\":\"Mourinho\",\"homeStadium\":\"Roma\"}"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.name").value("Roma"))
+                .andExpect(jsonPath("$.coach").value("Mourinho"))
+                .andExpect(jsonPath("$.homeStadium").value("Roma"))
+                .andReturn();
     }
 
+
+
+
     @Test
-    void testUpdateTeam() throws Exception {
+    void updatePlayer() throws Exception {
         Long id = 1L;
-        Team updatedTeam = new Team(id, "Updated Team", "Updated Coach", "Updated Stadium");
-        Team savedTeam = new Team(id, "Updated Team", "Updated Coach", "Updated Stadium");
+        TeamDTO updatedTeamDTO = new TeamDTO(id, "Tirona", "Shehi", "Tirona");
 
-        when(teamService.updateTeam(eq(id), any(Team.class))).thenReturn(savedTeam);
+        when(teamService.updateTeam(eq(id), any(TeamDTO.class))).thenReturn(updatedTeamDTO);
+        when(teamMapper.toEntity(any(TeamDTO.class))).thenReturn(new Team(1L, "Tirona", "Shehi", "Tirona"));
+        when(teamMapper.toDto(any(Team.class))).thenReturn(updatedTeamDTO);
 
-        mockMvc.perform(MockMvcRequestBuilders.put("/teams/{id}", id)
+        mockMvc.perform(put("/teams/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"Updated Team\",\"coach\":\"Updated Coach\",\"homeStadium\":\"Updated Stadium\"}"))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(1))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Updated Team"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.coach").value("Updated Coach"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.homeStadium").value("Updated Stadium"));
-
-        verify(teamService, times(1)).updateTeam(eq(id), any(Team.class));
+                        .content("{\"name\":\"Tirona\",\"coach\":\"Shehi\",\"homeStadium\":\"Tirona\"}"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.name").value("Tirona"))
+                .andExpect(jsonPath("$.coach").value("Shehi"))
+                .andExpect(jsonPath("$.homeStadium").value("Tirona"));
     }
 
+
     @Test
-    void testDeleteTeam() throws Exception {
+    void deletePlayer() throws Exception {
         Long id = 1L;
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/teams/{id}", id))
-                .andExpect(MockMvcResultMatchers.status().isOk());
+        mockMvc.perform(delete("/teams/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
 
         verify(teamService, times(1)).deleteTeam(id);
     }
 }
+
 

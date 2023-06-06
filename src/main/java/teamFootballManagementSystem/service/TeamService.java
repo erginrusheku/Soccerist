@@ -2,9 +2,12 @@ package teamFootballManagementSystem.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.*;
+import teamFootballManagementSystem.dto.TeamDTO;
+import teamFootballManagementSystem.mapper.TeamMapper;
 import teamFootballManagementSystem.model.Team;
 import teamFootballManagementSystem.repository.TeamRepository;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -12,29 +15,51 @@ public class TeamService {
     @Autowired
     private final TeamRepository teamRepository;
 
-    public TeamService(TeamRepository teamRepository) {
+    private final TeamMapper teamMapper;
+
+    public TeamService(TeamRepository teamRepository, TeamMapper teamMapper) {
         this.teamRepository = teamRepository;
+        this.teamMapper = teamMapper;
     }
 
-    public List<Team> getAllTeams() {
-        return teamRepository.findAll();
+    public List<TeamDTO> getAllTeams() {
+        List<Team> teams = teamRepository.findAll();
+        List<TeamDTO> teamDTOS = new ArrayList<>();
+
+        for(Team team : teams){
+            TeamDTO teamDTO = teamMapper.toDto(team);
+            teamDTOS.add(teamDTO);
+        }
+
+        return teamDTOS;
     }
 
-    public Team addTeam( Team team) {
-        return teamRepository.save(team);
+    public TeamDTO addTeam(TeamDTO teamDTO) {
+        Team team = teamMapper.toEntity(teamDTO);
+        Team savedTeam = teamRepository.save(team);
+
+        return teamMapper.toDto(savedTeam);
     }
 
-    public Team getById(Long id) {
-        return teamRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("\"Team not found with id:\"+ id"));
+    public TeamDTO getById(Long id) {
+        Team team = teamRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Team not found"));
+
+        return teamMapper.toDto(team);
     }
 
-    public Team updateTeam( Long id, Team updatedTeam) {
-        return teamRepository.findById(id).map(team -> {
-            team.setName(updatedTeam.getName());
-            team.setCoach(updatedTeam.getCoach());
-            team.setHomeStadium(updatedTeam.getHomeStadium());
-            return teamRepository.save(team);
-        }).orElseThrow(() -> new IllegalArgumentException("Team not found with id: " + id));
+    public TeamDTO updateTeam(Long id, TeamDTO updatedTeam) {
+        Team existingTeam = teamRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Team not found with id: " + id));
+
+            existingTeam.setName(updatedTeam.getName());
+            existingTeam.setCoach(updatedTeam.getCoach());
+            existingTeam.setHomeStadium(updatedTeam.getHomeStadium());
+
+            Team savedTeam = teamRepository.save(existingTeam);
+
+            return teamMapper.toDto(savedTeam);
+
     }
 
     public void deleteTeam( Long id) {

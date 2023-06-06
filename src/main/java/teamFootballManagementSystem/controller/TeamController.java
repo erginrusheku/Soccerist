@@ -2,7 +2,7 @@ package teamFootballManagementSystem.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import teamFootballManagementSystem.model.Team;
+import teamFootballManagementSystem.dto.TeamDTO;
 import teamFootballManagementSystem.service.TeamService;
 import java.util.List;
 
@@ -15,17 +15,17 @@ public class TeamController {
         this.teamService = teamService;
     }
     @GetMapping
-    public List<Team> getAllTeams(){return teamService.getAllTeams();}
+    public List<TeamDTO> getAllTeams(){return teamService.getAllTeams();}
     @PostMapping
-    public Team addTeam(@RequestBody Team team){
-        return teamService.addTeam(team);
+    public TeamDTO addTeam(@RequestBody TeamDTO teamDTO){
+        return teamService.addTeam(teamDTO);
     }
     @GetMapping("/{id}")
-    public Team getById(@PathVariable Long id){
+    public TeamDTO getById(@PathVariable Long id){
         return teamService.getById(id);
     }
     @PutMapping("/{id}")
-    public Team updateTeam(@PathVariable Long id, @RequestBody Team updatedTeam){
+    public TeamDTO updateTeam(@PathVariable Long id, @RequestBody TeamDTO updatedTeam){
         return teamService.updateTeam(id,updatedTeam);
     }
     @DeleteMapping("/{id}")

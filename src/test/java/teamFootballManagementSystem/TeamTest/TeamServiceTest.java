@@ -1,5 +1,8 @@
 package teamFootballManagementSystem.TeamTest;
 
+import org.mockito.InjectMocks;
+import teamFootballManagementSystem.dto.TeamDTO;
+import teamFootballManagementSystem.mapper.TeamMapper;
 import teamFootballManagementSystem.model.Team;
 import teamFootballManagementSystem.repository.TeamRepository;
 import teamFootballManagementSystem.service.TeamService;
@@ -17,91 +20,77 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 public class TeamServiceTest {
+    @InjectMocks
+    private TeamService teamService;
     @Mock
     private TeamRepository teamRepository;
 
-    private TeamService teamService;
+    @Mock
+    private TeamMapper teamMapper;
+
+
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        teamService = new TeamService(teamRepository);
     }
 
     @Test
     void testGetAllTeams() {
-        List<Team> teams = Arrays.asList(
-                new Team(1L, "Team 1", "Coach 1", "Stadium 1"),
-                new Team(2L, "Team 2", "Coach 2", "Stadium 2")
-        );
+        Team team1 = new Team(1L, "Team 1", "Coach 1", "Stadium 1");
+        Team team2 = new Team(2L, "Team 2", "Coach 2", "Stadium 2");
+        List<Team> teams = Arrays.asList(team1,team2);
 
         when(teamRepository.findAll()).thenReturn(teams);
+        when(teamMapper.toDto(team1)).thenReturn(new TeamDTO(1L, "Team 1", "Coach 1", "Stadium 1"));
+        when(teamMapper.toDto(team2)).thenReturn(new TeamDTO(2L, "Team 2", "Coach 2", "Stadium 2"));
 
-        List<Team> result = teamService.getAllTeams();
+        List<TeamDTO> result = teamService.getAllTeams();
 
-        assertEquals(2, result.size());
-        assertEquals("Team 1", result.get(0).getName());
-        assertEquals("Coach 1", result.get(0).getCoach());
-        assertEquals("Stadium 1", result.get(0).getHomeStadium());
-        assertEquals("Team 2", result.get(1).getName());
-        assertEquals("Coach 2", result.get(1).getCoach());
-        assertEquals("Stadium 2", result.get(1).getHomeStadium());
-
-        verify(teamRepository, times(1)).findAll();
+        assertEquals(teams.size(),result.size());
     }
 
     @Test
     void testAddTeam() {
-        Team team = new Team(null, "New Team", "New Coach", "New Stadium");
-        Team savedTeam = new Team(1L, "New Team", "New Coach", "New Stadium");
+        TeamDTO teamDTO = new TeamDTO(1L, "New Team", "New Coach", "New Stadium");
+        Team team = new Team(1L, "New Team", "New Coach", "New Stadium");
 
-        when(teamRepository.save(any(Team.class))).thenReturn(savedTeam);
+        when(teamMapper.toEntity(teamDTO)).thenReturn(team);
+        when(teamMapper.toDto(team)).thenReturn(teamDTO);
+        when(teamRepository.save(team)).thenReturn(team);
 
-        Team result = teamService.addTeam(team);
+        TeamDTO result = teamService.addTeam(teamDTO);
 
-        assertEquals(1L, result.getId());
-        assertEquals("New Team", result.getName());
-        assertEquals("New Coach", result.getCoach());
-        assertEquals("New Stadium", result.getHomeStadium());
-
-        verify(teamRepository, times(1)).save(any(Team.class));
+        assertEquals(teamDTO,result);
     }
 
     @Test
     void testGetById() {
         Long id = 1L;
         Team team = new Team(id, "Team 1", "Coach 1", "Stadium 1");
+        TeamDTO teamDTO= new TeamDTO(id, "Team 1", "Coach 1", "Stadium 1");
 
         when(teamRepository.findById(id)).thenReturn(Optional.of(team));
+        when(teamMapper.toDto(team)).thenReturn(teamDTO);
 
-        Team result = teamService.getById(id);
+        TeamDTO result = teamService.getById(id);
 
-        assertEquals(1L, result.getId());
-        assertEquals("Team 1", result.getName());
-        assertEquals("Coach 1", result.getCoach());
-        assertEquals("Stadium 1", result.getHomeStadium());
-
-        verify(teamRepository, times(1)).findById(id);
+        assertEquals(teamDTO,result);
     }
 
     @Test
     void testUpdateTeam() {
         Long id = 1L;
+        TeamDTO updatedTeamDTO = new TeamDTO(id, "Updated Team", "Updated Coach", "Updated Stadium");
         Team updatedTeam = new Team(id, "Updated Team", "Updated Coach", "Updated Stadium");
-        Team savedTeam = new Team(id, "Updated Team", "Updated Coach", "Updated Stadium");
 
-        when(teamRepository.findById(id)).thenReturn(Optional.of(savedTeam));
-        when(teamRepository.save(any(Team.class))).thenReturn(savedTeam);
+        when(teamRepository.findById(id)).thenReturn(Optional.of(new Team()));
+        when(teamRepository.save(any(Team.class))).thenReturn(updatedTeam);
+        when(teamMapper.toDto(updatedTeam)).thenReturn(updatedTeamDTO);
 
-        Team result = teamService.updateTeam(id, updatedTeam);
+        TeamDTO result = teamService.updateTeam(id, updatedTeamDTO);
 
-        assertEquals(1L, result.getId());
-        assertEquals("Updated Team", result.getName());
-        assertEquals("Updated Coach", result.getCoach());
-        assertEquals("Updated Stadium", result.getHomeStadium());
-
-        verify(teamRepository, times(1)).findById(id);
-        verify(teamRepository, times(1)).save(any(Team.class));
+       assertEquals(updatedTeamDTO,result);
     }
 
     @Test
