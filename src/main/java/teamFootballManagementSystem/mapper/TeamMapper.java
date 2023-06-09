@@ -1,8 +1,10 @@
 package teamFootballManagementSystem.mapper;
 
+import org.springframework.stereotype.Component;
 import teamFootballManagementSystem.dto.TeamDTO;
 import teamFootballManagementSystem.model.Team;
 
+@Component
 public class TeamMapper {
 
     public TeamDTO toDto(Team team){
